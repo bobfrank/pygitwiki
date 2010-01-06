@@ -1,1 +1,6 @@
-PyGitWiki is currently being developed, and will be posted in git.bobfrank.org sometime before february 2010 
+h1. PyGitWiki
+
+
+PyGitWiki is a simple wiki based on the textile python module, and uses git to control history revisions<br/>
+Currently the source is located at <a href="http://git.bobfrank.org/index.php?p=pygitwiki.git">git.bobfrank.org</a>
+
