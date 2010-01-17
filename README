@@ -1,0 +1,48 @@
+# Installation Notes:
+  # Apache Conf:
+  Enable mod_rewrite
+  Enable mod_cgi
+  Enable mod_auth
+
+  # site configuration:
+  # Notice the AllowOverride All on the /var/www, that is so we can use
+  # rewrite and auth config
+      DocumentRoot /var/www
+
+      <Directory /var/www/>
+              Options Indexes FollowSymLinks MultiViews
+              AllowOverride All
+              Order allow,deny
+              allow from all
+      </Directory>
+
+      ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+      <Directory "/usr/lib/cgi-bin">
+              AllowOverride AuthConfig
+              Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+              Order allow,deny
+              Allow from all
+      </Directory>
+
+  # .htaccess
+      #<IfModule>
+              RewriteEngine On
+              RewriteBase /
+              RewriteCond %{REMOTE_USER} ^([a-z0-9_]+)$
+              RewriteCond %{REQUEST_FILENAME} !-f
+              RewriteRule (.*) /cgi-bin/gitwiki.py?r=$1 [L]
+      #</IfModule>
+      AuthUserFile /var/.allowed_users
+      AuthType Basic
+      AuthName "dont bite me"
+      Require valid-user
+
+  # config.cfg
+  [gitwiki]
+  ; Location of per user config files.
+  git_config: /var/www/data/%(user)s.gitconfig
+  git_dir: /var/repos/repo_name/.git
+  ; local checkout of git repo
+  git_location: /var/www/data
+  git_push_dir: /var/repos/repo_name
+  http_dir: /var/www
