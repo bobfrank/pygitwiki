@@ -98,8 +98,9 @@ class GitWiki:
 
   def set_page(self, form):
     if form.has_key("r"):
-        if type(form['r'].value) == type([]):
-            page_parts = form["r"].value[0].split(':')
+        # This is happening for no good reason.
+        if type(form['r']) == type([]):
+            page_parts = form["r"][0].value.split(':')
         else:
             page_parts = form["r"].value.split(':')
         self.page = page_parts[0]
@@ -155,9 +156,9 @@ class GitWiki:
         self.git([git_location, 'push', git_push_dir])
 
   def git(self, run, debug=False):
+      self.add_debug( '$ %s' % ' '.join(run))
       p = subprocess.Popen(run, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=myenv)
       o,e = p.communicate()
-      self.add_debug( '$ %s' % ' '.join(run))
       self.add_debug( o.replace('\n', '<br/>') + e.replace('\n', '<br/>') )
       self.add_debug( '<br/>rcode=%d' % p.returncode)
       return o
@@ -173,16 +174,18 @@ class GitWiki:
           fp.close()
       except:
           pass
-      self.add_html('<form action="/%s:rename%s" method="post">' % (page,debp))
-      self.add_html('Editing <input name="new_name" value="%s"/>' % page)
-      self.add_html('<input type="hidden" name="r" value="%s:rename%s"/>' % (page,debp))
-      self.add_html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="Rename">')
-      self.add_html('</form>')
-      self.add_html('<form action="/%s:save%s" method="post">' % (page,debp))
-      self.add_html('<input type="hidden" name="r" value="%s:save%s"/>' % (page,debp))
-      self.add_html('<textarea name="data" cols="90" rows="40">%s</textarea><br/>' % data)
-      self.add_html('<input type="submit" value="save">')
-      self.add_html('</form>')
+      self.add_html("""
+      <form action="/%(page)s:rename%(debp)s" method="post">
+      Editing <input name="new_name" value="%(page)s"/>
+      <input type="hidden" name="r" value="%(page)s:rename%(debp)s"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="Rename">
+      </form>
+      <form action="/%(page)s:save%(debp)s" method="post">
+      <input type="hidden" name="r" value="%(page)s:save%(debp)s"/>
+      <textarea name="data" cols="90" rows="40">%(data)s</textarea><br/>
+      <input type="submit" value="save">
+      </form>
+      """ % { "page" : page, "debp" : debp, "data" : data })
 
   @action('blame')
   def action_blame(self):
