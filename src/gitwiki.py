@@ -280,7 +280,7 @@ class GitWiki:
           self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
           return
       data = self.git([git_location,'blame','-c',self.page], self.debug)
-      lines = data.split('\n')
+      lines = data.replace('\r','').split('\n')
       data = ''
       blamery = {}
       for i,line in enumerate(lines):
