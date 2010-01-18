@@ -345,9 +345,9 @@ class GitWiki:
               or self.page_opt == 'rename':
         linksopt = ''
     data = '\n'+re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
-    data = data.replace('\ncommit ','\n<hr/>commit ')
-    linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
-    self.add_html(linkified_data)
+    data = data.replace('\ncommit ','\n</pre><hr/><pre>commit ')
+#    linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
+    self.add_html("<pre>" + data + "</pre>")
 
   def add_links(self):
     page = self.page
