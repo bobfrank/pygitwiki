@@ -22,7 +22,7 @@ QUERY_STRING = os.environ['QUERY_STRING']
 user = USER
 
 config = ConfigParser.ConfigParser()
-config.read('/var/www/data/config.cfg')
+config.read('config.cfg')
 
 git_location = config.get('gitwiki','git_location',0)
 http_dir     = config.get('gitwiki','http_dir',0)
@@ -240,7 +240,7 @@ class GitWiki:
       if not os.path.exists(self.page):
           self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
           return
-      data = self.git([git_location,'blame','-c','--date=relative', self.page], self.debug)
+      data = self.git([git_location,'blame','-c',self.page], self.debug)
       lines = data.split('\r\n')
       data = ''
       blamery = {}
@@ -253,7 +253,27 @@ class GitWiki:
               else:
                   tag = ' thisisanendoflineforline-%s-'%i
                   data = data + tabs[3][k+1:]+'%s\n'%tag
-                  blamery[tag] = [tabs[0], tabs[2], tabs[1][1:].strip()]
+                  txt = tabs[2]
+                  try:
+                    import time
+                    tm = time.mktime(time.strptime(tabs[2][:19],"%Y-%m-%d %H:%M:%S"))
+                    hrs = int(tabs[2][20:23])
+                    tm -= hrs*60
+                    diff = time.time()-tm
+                    if diff > 120*60*24:
+                        diff /= 60*60*24
+                        txt = '%d days ago' % int(diff)
+                    elif diff > 120*60:
+                        diff /= 60*60
+                        txt = '%s hours ago' % int(diff)
+                    elif diff > 120:
+                        diff /= 60
+                        txt = '%s minutes ago' % int(diff)
+                    else:
+                        txt = '%s seconds ago' % int(diff)
+                  except:
+                    pass
+                  blamery[tag] = [tabs[0], txt, tabs[1][1:].strip()]
       blob = textile.textile(data)
       for tag in blamery:
          k = blob.find(tag)
