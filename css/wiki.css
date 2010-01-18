@@ -1,0 +1,19 @@
+#content {
+  width: 650;
+  padding: 25px;
+  margin: auto;
+  border: 1px solid #dedede;
+}
+#debug {
+  height:200px;
+  left:0;
+  overflow-y:scroll;
+  position:absolute;
+  width:100%;
+  border: 1px solid #cdcdcd;
+}
+textarea #data {
+  height: 400px;
+  width: 650px;
+  overflow: auto;
+}

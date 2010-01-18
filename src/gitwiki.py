@@ -43,16 +43,42 @@ START_HTML = """
 <div id="header"> </div>
 <div id="content">
 """
-END_HTML = """
+RENAME_HTML = """
+<form action="/%(page)s:rename%(debp)s" method="post">
+  Editing <input name="new_name" value="%(page)s"/>
+  <input type="hidden" name="r" value="%(page)s:rename%(debp)s"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="submit" value="Rename">
+</form>
+"""
+EDIT_HTML = """
+<form action="/%(page)s:edit%(debp)s" method="post">
+<input type="hidden" name="r" value="%(page)s:edit%(debp)s"/>
+<textarea name="data" cols="90" rows="40" id="data">%(data)s</textarea><br/>
+<input type="submit" value="%(action)s" name="%(action)s">
+<input type="submit" value="save" name="save">
+</form>
+"""
+HIDE_EDIT_TEXTAREA = """
+<style>
+textarea#data {
+    display: none;
+}
+</style>
+"""
+
+END_CONTENT = """
 </div>
+"""
+END_HTML = """
 <div id='footer'>
 <br/><br/><i><font size=2><a href="/source.py">[source code]</a></font></i></div></body></html>
 """
 
 
 TOOLTIP_INCLUDE = '<script type="text/javascript" src="/wz_tooltip.js"></script>'
-START_DEBUG = '[debug mode on]<table border=1><tr><td><pre>'
-END_DEBUG = '</pre></td></tr></table>'
+START_DEBUG = '<div id="debug">[debug mode on]<table><tr><td><pre>'
+END_DEBUG = '</pre></td></tr></table></div>'
 
 # Generate links
 def links(data,debp,mode=None):
@@ -98,8 +124,9 @@ class GitWiki:
 
   def set_page(self, form):
     if form.has_key("r"):
-        if type(form['r'].value) == type([]):
-            page_parts = form["r"].value[0].split(':')
+        # This is happening for no good reason.
+        if type(form['r']) == type([]):
+            page_parts = form["r"][0].value.split(':')
         else:
             page_parts = form["r"].value.split(':')
         self.page = page_parts[0]
@@ -109,11 +136,11 @@ class GitWiki:
                 self.page_opt = self.page_opt.split('&')[0]
 
   def add_html(self, data):
-    self.html = '%s%s' % (self.html,data)
+    self.html = '%s%s\r\n' % (self.html,data)
 
   def add_debug(self, data):
     if self.debug:
-        self.debug_html += data
+        self.debug_html += data + "\n"
 
   def save(self, form):
     page = self.page
@@ -155,6 +182,7 @@ class GitWiki:
         self.git([git_location, 'push', git_push_dir])
 
   def git(self, run, debug=False):
+      self.add_debug( '$ %s' % ' '.join(run))
       p = subprocess.Popen(run, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=myenv)
       o,e = p.communicate()
       self.add_debug( '$ %s\n' % ' '.join(run))
@@ -167,22 +195,30 @@ class GitWiki:
       page = self.page
       debp = self.debp
       data = ''
-      try:
-          fp = open('%s' % page)
-          data = fp.read()
-          fp.close()
-      except:
-          pass
-      self.add_html('<form action="/%s:rename%s" method="post">' % (page,debp))
-      self.add_html('Editing <input name="new_name" value="%s"/>' % page)
-      self.add_html('<input type="hidden" name="r" value="%s:rename%s"/>' % (page,debp))
-      self.add_html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="Rename">')
-      self.add_html('</form>')
-      self.add_html('<form action="/%s:save%s" method="post">' % (page,debp))
-      self.add_html('<input type="hidden" name="r" value="%s:save%s"/>' % (page,debp))
-      self.add_html('<textarea name="data" cols="90" rows="40">%s</textarea><br/>' % data)
-      self.add_html('<input type="submit" value="save">')
-      self.add_html('</form>')
+      self.add_debug(str(form))
+      if form.has_key("data"):
+          data = form["data"].value
+      else:
+          try:
+              fp = open('%s' % page)
+              data = fp.read()
+              fp.close()
+          except:
+              pass
+
+      if form.has_key("preview"):
+          # Show the POSTed data
+          self.add_html(RENAME_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
+          self.add_html(textile.textile(links(data,self.debp,'view')))
+          self.add_html(EDIT_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
+          # Hide the text area, too.
+          self.add_html(HIDE_EDIT_TEXTAREA)
+      elif form.has_key("save"):
+          self.save(form)
+          # And redirect, after
+      else:
+          self.add_html(RENAME_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
+          self.add_html(EDIT_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "preview" })
 
   @action('blame')
   def action_blame(self):
@@ -320,9 +356,7 @@ class GitWiki:
     self.git([git_location, 'stash','clear'])
 
     # Actions : no printing HTML gets done here
-    if self.page_opt == 'save':
-        self.save(form)
-    elif self.page_opt == 'rename':
+    if self.page_opt == 'rename':
         self.rename(form)
 
     self.add_links()
@@ -335,6 +369,7 @@ class GitWiki:
     else:
         self.action_show()
 
+    self.add_html(END_CONTENT)
     self.add_debug(END_DEBUG)
     self.add_html(self.debug_html)
     self.add_html(END_HTML)
