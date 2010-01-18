@@ -144,9 +144,11 @@ class GitWiki:
         self.debug_html += data + "\n"
 
   def redirect(self, url):
-    # pass
-    print REDIRECT_HTML % { "url" : url }
-    sys.exit(0)
+     print "Status: 301 Moved\r\n",
+     print "Location: %s" % url
+     print  
+     print "Redirecting..."
+     sys.exit(0)
 
   def save(self, form):
     page = self.page
@@ -284,22 +286,6 @@ class GitWiki:
   def handle_logs(self, data):
     k = -2
     last = ''
-#    diffs = {}
-#    while True:
-#        k = data.find('commit', k+2)
-#        if k >= 0:
-#            j = data.find('\n',k)
-##            if j >= 0:
-#                commit = data[k+7:j]
-#                if len(commit) > 10:
-#                    if last != '':
-#                        diffs[last] = commit
-#                    last = commit
-#        else:
-#            break
-#    for a in diffs:
-#        b = diffs[a]
-#        data = data.replace(a, '<a href="diff&b=%s&a=%s">%s</a>'%(a.upper(),b.upper(),a.upper()))
     linksopt = self.page_opt
     if self.page_opt == 'edit' \
               or self.page_opt == 'blame' \
@@ -308,13 +294,6 @@ class GitWiki:
         linksopt = ''
     data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
     self.add_html(links(data.replace('\n','<br/>'),self.debp,linksopt))
-
-#  @page('diff')
-#  def page_diff(self):
-#    if form.has_key('a') and form.has_key('b'):
-#        data = self.git([git_location,'diff',form['a'].value,form['b'].value])
-#    	data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
-#        self.add_html(links(data.replace('\n','<br/>'),self.debp))
 
   def add_links(self):
     page = self.page
