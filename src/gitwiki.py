@@ -390,6 +390,8 @@ class GitWiki:
     if page_opt == 'log':
         log_link = '<a href="/%s%s">current</a>' % (page,debp)
     edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
+    if view_only:
+        edit_link = ''
 
     s ="""
        <div id="nav_bar"> %s [%s]  %s  %s </div>\n
