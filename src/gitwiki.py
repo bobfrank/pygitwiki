@@ -302,12 +302,12 @@ class GitWiki:
 
   @page('log')
   def page_log(self):
-    data = '\n'+self.git([git_location,'log','-p', '--date=relative'])
+    data = self.git([git_location,'log','-p', '--date=relative'])
     self.handle_logs(data)
 
   @action('log')
   def action_log(self):
-    data = '\n'+self.git([git_location,'log','-p',self.page])
+    data = self.git([git_location,'log','-p',self.page])
     self.handle_logs(data)
 
   def handle_logs(self, data):
@@ -319,7 +319,8 @@ class GitWiki:
               or self.page_opt == 'save' \
               or self.page_opt == 'rename':
         linksopt = ''
-    data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
+    data = '\n'+re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
+    data = data.replace('\ncommit ','\n<hr/>commit ')
     linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
     self.add_html(linkified_data)
 
