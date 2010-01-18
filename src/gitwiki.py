@@ -43,13 +43,15 @@ START_HTML = """
 <div id="header"> </div>
 <div id="content">
 """
-EDIT_HTML = """
+RENAME_HTML = """
 <form action="/%(page)s:rename%(debp)s" method="post">
   Editing <input name="new_name" value="%(page)s"/>
   <input type="hidden" name="r" value="%(page)s:rename%(debp)s"/>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <input type="submit" value="Rename">
 </form>
+"""
+EDIT_HTML = """
 <form action="/%(page)s:edit%(debp)s" method="post">
 <input type="hidden" name="r" value="%(page)s:edit%(debp)s"/>
 <textarea name="data" cols="90" rows="40" id="data">%(data)s</textarea><br/>
@@ -205,6 +207,7 @@ class GitWiki:
 
       if form.has_key("preview"):
           # Show the POSTed data
+          self.add_html(RENAME_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
           self.add_html(textile.textile(links(data,self.debp,'view')))
           self.add_html(EDIT_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
           # Hide the text area, too.
@@ -213,6 +216,7 @@ class GitWiki:
           self.save(form)
           # And redirect, after
       else:
+          self.add_html(RENAME_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
           self.add_html(EDIT_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "preview" })
 
   @action('blame')
