@@ -75,15 +75,9 @@ END_HTML = """
 <br/><br/><i><font size=2><a href="/source.py">[source code]</a></font></i></div></body></html>
 """
 
-REDIRECT_HTML = """
-<html>
-<head>
-<meta HTTP-EQUIV="REFRESH" content="0; url=%(url)s">
-</head>
-</html>
-"""
+REDIRECT_HTML = """Location: %(url)s\n\n """
 
-TOOLTIP_INCLUDE = '<script type="text/javascript" src="/wz_tooltip.js"></script>'
+TOOLTIP_INCLUDE = '<script type="text/javascript" src="/scripts/wz_tooltip.js"></script>'
 START_DEBUG = '<div id="debug">[debug mode on]<table><tr><td><pre>'
 END_DEBUG = '</pre></td></tr></table></div>'
 
@@ -151,7 +145,6 @@ class GitWiki:
 
   def redirect(self, url):
     # pass
-    print CONTENT_TYPE
     print REDIRECT_HTML % { "url" : url }
     sys.exit(0)
 
