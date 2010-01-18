@@ -269,7 +269,9 @@ class GitWiki:
           fp.close()
       except:
           data = 'File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp)
-      self.add_html(textile.textile(links(data,self.debp,'view')))
+      linkified_data = links(data,self.debp,'view')
+      wikified_data = textile.textile(linkified_data)
+      self.add_html(wikified_data)
 
   @page('log')
   def page_log(self):
@@ -307,7 +309,8 @@ class GitWiki:
               or self.page_opt == 'rename':
         linksopt = ''
     data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
-    self.add_html(links(data.replace('\n','<br/>'),self.debp,linksopt))
+    linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
+    self.add_html(linkified_data)
 
 #  @page('diff')
 #  def page_diff(self):
