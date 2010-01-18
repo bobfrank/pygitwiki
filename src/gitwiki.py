@@ -44,17 +44,20 @@ START_HTML = """
 <div id="content">
 """
 RENAME_HTML = """
-<form action="/%(page)s:rename%(debp)s" method="post">
-  Editing <input name="new_name" value="%(page)s"/>
+<form action="/%(page)s:rename%(debp)s" method="post" id="rename">
   <input type="hidden" name="r" value="%(page)s:rename%(debp)s"/>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <input type="submit" value="Rename">
+
+  <div id="rename_bar">
+    <label for="name_field" id="rename_label">Editing Page:</label>
+    <input id="rename_button" type="submit" value="rename">
+    <input id="name_field" name="new_name" value="%(page)s"/>
+  </div>
 </form>
 """
 EDIT_HTML = """
-<form action="/%(page)s:edit%(debp)s" method="post">
+<form action="/%(page)s:edit%(debp)s" method="post" id="edit">
 <input type="hidden" name="r" value="%(page)s:edit%(debp)s"/>
-<textarea name="data" cols="90" rows="40" id="data">%(data)s</textarea><br/>
+<textarea name="data" id="data" wrap="virtual">%(data)s</textarea><br/>
 <input type="submit" value="%(action)s" name="%(action)s">
 <input type="submit" value="save" name="save">
 </form>
@@ -80,6 +83,7 @@ REDIRECT_HTML = """Location: %(url)s\n\n """
 TOOLTIP_INCLUDE = '<script type="text/javascript" src="/scripts/wz_tooltip.js"></script>'
 START_DEBUG = '<div id="debug">[debug mode on]<table><tr><td><pre>'
 END_DEBUG = '</pre></td></tr></table></div>'
+
 
 # Generate links
 def links(data,debp,mode=None):
@@ -166,6 +170,7 @@ class GitWiki:
 
   def rename(self, form):
     page = self.page
+    debp = self.debp
     new_name = form['new_name'].value
     if new_name.find('..') >= 0 or new_name.find('/') >= 0:
         self.add_html('Invalid filename')
@@ -233,7 +238,7 @@ class GitWiki:
       if not os.path.exists(self.page):
           self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
           return
-      data = self.git([git_location,'blame','-c',self.page], self.debug)
+      data = self.git([git_location,'blame','-c','--date=relative', self.page], self.debug)
       lines = data.split('\r\n')
       data = ''
       blamery = {}
@@ -246,7 +251,7 @@ class GitWiki:
               else:
                   tag = ' thisisanendoflineforline-%s-'%i
                   data = data + tabs[3][k+1:]+'%s\n'%tag
-                  blamery[tag] = [tabs[0], tabs[1][1:].strip(), tabs[2]]
+                  blamery[tag] = [tabs[0], tabs[2], tabs[1][1:].strip()]
       blob = textile.textile(data)
       for tag in blamery:
          k = blob.find(tag)
@@ -258,7 +263,7 @@ class GitWiki:
                      blob.rfind('<p>',0,k))
              if j >= 0:
                  blob = blob.replace(blob[j+3:k+len(tag)],
-"""<span class="line" onmouseover="Tip(\'User: %s<br/>Date/Time: %s<br/>Revision: %s\')" onmouseout="UnTip()">%s</span>""" %                                    (blamery[tag][1], blamery[tag][2], blamery[tag][0], blob[j+3:k]) )
+"""<span class="line" onmouseover="Tip(\'%s by %s<br/>Revision: %s\')" onmouseout="UnTip()">%s</span>""" %                                    (blamery[tag][1], blamery[tag][2], blamery[tag][0], blob[j+3:k]) )
       self.add_html(links(blob, self.debp))
 
   @action('view')
@@ -324,13 +329,18 @@ class GitWiki:
     page_opt = self.page_opt
     debp = self.debp
 
-    log_link = '<a href="/%s:log%s">log</a>' % (page,debp)
-    if page_opt == 'log':
-        log_link = '<a href="/%s%s">regular page</a>' % (page,debp)
-    edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
-    s ='| [%s] | %s | %s |<br/><br/>\n' % (page,log_link,edit_link)
+    add_home = ""
     if page != 'Home':
-        s = '| [Home] '+s
+        add_home = '[Home]'
+
+    log_link = '<a href="/%s:log%s">history</a>' % (page,debp)
+    if page_opt == 'log':
+        log_link = '<a href="/%s%s">current</a>' % (page,debp)
+    edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
+
+    s ="""
+       <div id="nav_bar"> %s [%s]  %s  %s </div>\n
+       """ % (add_home, page,log_link,edit_link)
     linksopt = self.page_opt
     if self.page_opt == 'edit' \
               or self.page_opt == 'blame' \

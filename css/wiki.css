@@ -1,19 +1,80 @@
 #content {
-  width: 650;
-  padding: 25px;
-  margin: auto;
-  border: 1px solid #dedede;
+  width : 650;
+  padding : 25px;
+  margin : auto;
+  border : 1px solid #dedede
 }
+
+#content a:visited, #content a {
+  color : #4c4c43;
+  font-size : 100%;
+  text-decoration : none;
+  border-bottom : 1px dotted #cdcdcd;
+  font-family : sans-serif
+}
+
+#content a:hover {
+  color : #000;
+  border-bottom : none
+}
+
+#content div#nav_bar {
+  margin-bottom : 15px
+}
+
+#content div#nav_bar a {
+  border-left : 2px dashed #A3BFBD;
+  color : #6d6d6d;
+  font-size : 16px;
+  padding : 5px;
+  text-decoration : none;
+  border-bottom : none;
+  display : inline-block
+}
+#content form #rename #rename_bar {
+  position : relative
+}
+
+#content form#rename #rename_label {
+  position : absolute;
+  left : 5px;
+  top : 5px;
+  height : 35px;
+  font-size : 14px
+}
+
+#content form#rename input[name="new_name"] {
+  font-size : 30px;
+  padding-left : 100px;
+  margin-right : 100px;
+  width : 100%;
+  margin-bottom : 20px;
+  border : 3px solid #cdcdcd
+}
+
+#content form#edit input[value="rename"] {
+  position : absolute;
+  right : 10px;
+  top : 10px;
+  height : 25px
+}
+
+#content form#edit textarea#data {
+  height : 400px;
+  width : 650px;
+  overflow : auto;
+  padding : 5px;
+  border : 3px solid #cdcdcd;
+  margin-bottom : 20px
+}
+
 #debug {
-  height:200px;
-  left:0;
-  overflow-y:scroll;
-  position:absolute;
-  width:100%;
-  border: 1px solid #cdcdcd;
+  height : 200px;
+  left : 0;
+  overflow-y : scroll;
+  position : absolute;
+  width : 100%;
+  border : 1px solid #cdcdcd
 }
-textarea #data {
-  height: 400px;
-  width: 650px;
-  overflow: auto;
-}
+
+
