@@ -65,16 +65,18 @@ textarea#data {
 </style>
 """
 
-END_HTML = """
+END_CONTENT = """
 </div>
+"""
+END_HTML = """
 <div id='footer'>
 <br/><br/><i><font size=2><a href="/source.py">[source code]</a></font></i></div></body></html>
 """
 
 
 TOOLTIP_INCLUDE = '<script type="text/javascript" src="/wz_tooltip.js"></script>'
-START_DEBUG = '[debug mode on]<table border=1><tr><td><pre>'
-END_DEBUG = '</pre></td></tr></table>'
+START_DEBUG = '<div id="debug">[debug mode on]<table><tr><td><pre>'
+END_DEBUG = '</pre></td></tr></table></div>'
 
 # Generate links
 def links(data,debp,mode=None):
@@ -340,6 +342,7 @@ class GitWiki:
     else:
         self.action_show()
 
+    self.add_html(END_CONTENT)
     self.add_debug(END_DEBUG)
     self.add_html(self.debug_html)
     self.add_html(END_HTML)
