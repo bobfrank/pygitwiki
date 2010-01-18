@@ -120,6 +120,7 @@ class GitWiki:
     self.debug_html = ''
     self.page = 'Home'
     self.page_opt = 'blame'
+    self.author = False
 
   def set_debug(self):
     if QUERY_STRING.find('debug') > 0:
@@ -167,7 +168,11 @@ class GitWiki:
         else:
             self.add_debug('no data found in form for save!')
         self.git([git_location, 'add', page])
-        self.git([git_location, 'commit','-a','-m','changed page %s via website' % page])
+        run = [git_location, 'commit', '-a', '-m', 'changed page %s via website' % page]
+        if self.author:
+            run.append('--author')
+            run.append(self.author)
+        self.git(run)
         self.git([git_location, 'push', git_push_dir])
 
   def rename(self, form):
@@ -190,19 +195,39 @@ class GitWiki:
                     self.git([git_location, 'add', file])
                 if file == page:
                     self.git([git_location, 'mv', page, new_name])
-        self.git([git_location, 'commit','-a','-m',
-                  'renaming %s to %s via website' % (page,new_name)])
+        run = [git_location, 'commit', '-a', '-m',
+                  'renaming %s to %s via website' % (page, new_name)]
+        if self.author:
+            run.append('--author')
+            run.append(self.author)
+        self.git(run)
         self.git([git_location, 'push', git_push_dir])
     self.redirect("/%s%s" % (new_name, debp))
 
   def git(self, run, debug=False):
-      self.add_debug( '$ %s' % ' '.join(run))
       p = subprocess.Popen(run, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=myenv)
       o,e = p.communicate()
       self.add_debug( '$ %s\n' % ' '.join(run))
       self.add_debug( '%s%s\n' % (o, e) )
       self.add_debug( 'rcode=%d\n' % p.returncode)
       return o
+
+  def load_config(self, cfg):
+      data = {}
+      group = ''
+      fp = open(cfg)
+      for line in fp:
+          if len(line) > 1 and line[0] == '[':
+              group = line[1:].split(']')[0]
+              data[group] = {}
+          sp = line.split('=')
+          if len(sp) == 2:
+              data[group][sp[0].strip()] = sp[1].strip()
+      fp.close()
+      if data.has_key('user'):
+          if data['user'].has_key('name') and data['user'].has_key('email'):
+              self.author = '%s <%s>' % (data['user']['name'], data['user']['email'])
+              self.add_debug(':: author = "%s"\n' % self.author.replace('<','&lt;').replace('>','&gt;'))
 
   @action('edit')
   def action_edit(self):
@@ -361,10 +386,12 @@ class GitWiki:
     self.add_debug( '$ cat %s\n' % git_config)
     if not os.path.exists(git_config):
         open(git_config).write("""[user]
-        name = %s
-        email = %s@theinternetneverlies.com""" % (user,user) )
+name = %s
+email = %s@theinternetneverlies.com""" % (user,user) )
     self.add_debug( open(git_config).read())
     self.add_debug( ':: page=%s, page_opt=%s<br/>' % (self.page, self.page_opt))
+
+    self.load_config(git_config)
 
     # an actual chdir
     self.add_debug( '$ cd %s' % (http_dir))
