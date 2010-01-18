@@ -17,20 +17,12 @@ cgitb.enable()
 form = cgi.FieldStorage()
 
 # Configuration - these should be made into constants, later
-config = ConfigParser.ConfigParser()
-config.read('config.cfg')
-
-try:
-  view_only = config.get('gitwiki', 'view_only', 0)
-except:
-  view_only = False
-
-try:
-    USER = os.environ['REMOTE_USER']
-except:
-    USER = view_only
+USER = os.environ['REMOTE_USER']
 QUERY_STRING = os.environ['QUERY_STRING']
 user = USER
+
+config = ConfigParser.ConfigParser()
+config.read('config.cfg')
 
 git_location = config.get('gitwiki','git_location',0)
 http_dir     = config.get('gitwiki','http_dir',0)
@@ -164,8 +156,6 @@ class GitWiki:
      sys.exit(0)
 
   def save(self, form):
-    if view_only:
-        return
     page = self.page
     if page.find('..') >= 0 or page.find('/') >= 0:
         self.add_html('Invalid filename')
@@ -186,8 +176,6 @@ class GitWiki:
         self.git([git_location, 'push', git_push_dir])
 
   def rename(self, form):
-    if view_only:
-        return
     page = self.page
     debp = self.debp
     new_name = form['new_name'].value
@@ -243,8 +231,6 @@ class GitWiki:
 
   @action('edit')
   def action_edit(self):
-      if view_only:
-          return
       page = self.page
       debp = self.debp
       data = ''
@@ -276,12 +262,11 @@ class GitWiki:
 
   @action('blame')
   def action_blame(self):
-      if not view_only:
-          if not os.path.exists(self.page):
-              self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
-              return
+      if not os.path.exists(self.page):
+          self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
+          return
       data = self.git([git_location,'blame','-c',self.page], self.debug)
-      lines = data.split('\n')
+      lines = data.split('\r\n')
       data = ''
       blamery = {}
       for i,line in enumerate(lines):
@@ -312,8 +297,6 @@ class GitWiki:
                     else:
                         txt = '%s seconds ago' % int(diff)
                   except:
-                    self.add_debug('exception')
-                    import traceback
                     pass
                   blamery[tag] = [tabs[0], txt, tabs[1][1:].strip()]
       blob = textile.textile(data)
@@ -361,10 +344,24 @@ class GitWiki:
               or self.page_opt == 'save' \
               or self.page_opt == 'rename':
         linksopt = ''
+    lout = ''
+    inpage = False
+    for line in data.split('\n'):
+        if line[:2] == '@@':
+            inpage = True
+        elif line[:13] == 'diff --git a/':
+            inpage = False
+        elif len(line) > 1 and inpage:
+            if line[0] == '+' and line[:4] != '+++ ':
+                line = '<span style="background-color: a9d0f5;">' + line[1:] + '</span>'
+            elif line[0] == '-' and line[:4] != '--- ':
+                line = '<strike><span style="background-color: f78181;">' + line[1:] + '</span></strike>'
+        lout += line+'\n'
+    data = lout
     data = '\n'+re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
-    data = data.replace('\ncommit ','\n</pre><hr/><pre>commit ')
-#    linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
-    self.add_html("<pre>" + data + "</pre>")
+    data = data.replace('\ncommit ','\n<hr/>commit ')
+    linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
+    self.add_html(linkified_data)
 
   def add_links(self):
     page = self.page
@@ -379,8 +376,6 @@ class GitWiki:
     if page_opt == 'log':
         log_link = '<a href="/%s%s">current</a>' % (page,debp)
     edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
-    if view_only:
-        edit_link = ''
 
     s ="""
        <div id="nav_bar"> %s [%s]  %s  %s </div>\n
@@ -401,8 +396,6 @@ class GitWiki:
     self.add_html(START_HTML)
     self.add_html(TOOLTIP_INCLUDE)
 
-    if view_only:
-        user = view_only
     self.add_debug(':: user=%s\n'%user)
     self.add_debug( '$ cat %s\n' % git_config)
     if not os.path.exists(git_config):
