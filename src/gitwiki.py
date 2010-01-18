@@ -199,8 +199,9 @@ class GitWiki:
       self.add_debug( '$ %s' % ' '.join(run))
       p = subprocess.Popen(run, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=myenv)
       o,e = p.communicate()
-      self.add_debug( o.replace('\n', '<br/>') + e.replace('\n', '<br/>') )
-      self.add_debug( '<br/>rcode=%d' % p.returncode)
+      self.add_debug( '$ %s\n' % ' '.join(run))
+      self.add_debug( '%s%s\n' % (o, e) )
+      self.add_debug( 'rcode=%d\n' % p.returncode)
       return o
 
   @action('edit')
@@ -279,44 +280,66 @@ class GitWiki:
 
   @page('log')
   def page_log(self):
-    data = self.git([git_location,'log'])
+    data = '\n'+self.git([git_location,'log','-p'])
+    self.handle_logs(data)
+
+  @action('log')
+  def action_log(self):
+    data = '\n'+self.git([git_location,'log','-p',self.page])
+    self.handle_logs(data)
+
+  def handle_logs(self, data):
     k = -2
     last = ''
-    diffs = {}
-    while True:
-        k = data.find('commit', k+2)
-        if k >= 0:
-            j = data.find('\n',k)
-            if j >= 0:
-                commit = data[k+7:j]
-                if len(commit) > 10:
-                    if last != '':
-                        diffs[last] = commit
-                    last = commit
-        else:
-            break
-    for a in diffs:
-        b = diffs[a]
-        data = data.replace(a, '<a href="diff&b=%s&a=%s">%s</a>'%(a.upper(),b.upper(),a.upper()))
-    self.add_html('<pre>%s</pre>' % data)
+#    diffs = {}
+#    while True:
+#        k = data.find('commit', k+2)
+#        if k >= 0:
+#            j = data.find('\n',k)
+##            if j >= 0:
+#                commit = data[k+7:j]
+#                if len(commit) > 10:
+#                    if last != '':
+#                        diffs[last] = commit
+#                    last = commit
+#        else:
+#            break
+#    for a in diffs:
+#        b = diffs[a]
+#        data = data.replace(a, '<a href="diff&b=%s&a=%s">%s</a>'%(a.upper(),b.upper(),a.upper()))
+    linksopt = self.page_opt
+    if self.page_opt == 'edit' \
+              or self.page_opt == 'blame' \
+              or self.page_opt == 'save' \
+              or self.page_opt == 'rename':
+        linksopt = ''
+    data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
+    self.add_html(links(data.replace('\n','<br/>'),self.debp,linksopt))
 
-  @page('diff')
-  def page_diff(self):
-    if form.has_key('a') and form.has_key('b'):
-        data = self.git([git_location,'diff',form['a'].value,form['b'].value])
-    	data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
-        self.add_html(links(data.replace('\n','<br/>'),self.debp))
+#  @page('diff')
+#  def page_diff(self):
+#    if form.has_key('a') and form.has_key('b'):
+#        data = self.git([git_location,'diff',form['a'].value,form['b'].value])
+#    	data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
+#        self.add_html(links(data.replace('\n','<br/>'),self.debp))
 
   def add_links(self):
     page = self.page
     page_opt = self.page_opt
     debp = self.debp
 
-    s ='| [%s] <!-- | <a href="/%s:blame%s">blame</a> --> | <a href="/log">log</a> | <a href="/%s:edit%s">edit</a> |<br/><br/>\n' % (page,page,debp,page,debp)
+    log_link = '<a href="/%s:log%s">log</a>' % (page,debp)
+    if page_opt == 'log':
+        log_link = '<a href="/%s%s">regular page</a>' % (page,debp)
+    edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
+    s ='| [%s] | %s | %s |<br/><br/>\n' % (page,log_link,edit_link)
     if page != 'Home':
         s = '| [Home] '+s
     linksopt = self.page_opt
-    if self.page_opt == 'edit' or self.page_opt == 'blame' or self.page_opt == 'save' or self.page_opt == 'rename':
+    if self.page_opt == 'edit' \
+              or self.page_opt == 'blame' \
+              or self.page_opt == 'save' \
+              or self.page_opt == 'rename':
         linksopt = ''
     self.add_html(links(s,debp,linksopt))
 
@@ -328,8 +351,8 @@ class GitWiki:
     self.add_html(START_HTML)
     self.add_html(TOOLTIP_INCLUDE)
 
-    self.add_debug(':: user=%s'%user)
-    self.add_debug( '$ cat %s' % git_config)
+    self.add_debug(':: user=%s\n'%user)
+    self.add_debug( '$ cat %s\n' % git_config)
     if not os.path.exists(git_config):
         open(git_config).write("""[user]
         name = %s
