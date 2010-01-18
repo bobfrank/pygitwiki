@@ -17,12 +17,20 @@ cgitb.enable()
 form = cgi.FieldStorage()
 
 # Configuration - these should be made into constants, later
-USER = os.environ['REMOTE_USER']
-QUERY_STRING = os.environ['QUERY_STRING']
-user = USER
-
 config = ConfigParser.ConfigParser()
 config.read('config.cfg')
+
+try:
+  view_only = config.get('gitwiki', 'view_only', 0)
+except:
+  view_only = False
+
+try:
+    USER = os.environ['REMOTE_USER']
+except:
+    USER = view_only
+QUERY_STRING = os.environ['QUERY_STRING']
+user = USER
 
 git_location = config.get('gitwiki','git_location',0)
 http_dir     = config.get('gitwiki','http_dir',0)
@@ -156,6 +164,8 @@ class GitWiki:
      sys.exit(0)
 
   def save(self, form):
+    if view_only:
+        return
     page = self.page
     if page.find('..') >= 0 or page.find('/') >= 0:
         self.add_html('Invalid filename')
@@ -176,6 +186,8 @@ class GitWiki:
         self.git([git_location, 'push', git_push_dir])
 
   def rename(self, form):
+    if view_only:
+        return
     page = self.page
     debp = self.debp
     new_name = form['new_name'].value
@@ -231,6 +243,8 @@ class GitWiki:
 
   @action('edit')
   def action_edit(self):
+      if view_only:
+          return
       page = self.page
       debp = self.debp
       data = ''
@@ -362,6 +376,8 @@ class GitWiki:
     if page_opt == 'log':
         log_link = '<a href="/%s%s">current</a>' % (page,debp)
     edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
+    if view_only:
+        edit_link = ''
 
     s ="""
        <div id="nav_bar"> %s [%s]  %s  %s </div>\n
@@ -382,6 +398,8 @@ class GitWiki:
     self.add_html(START_HTML)
     self.add_html(TOOLTIP_INCLUDE)
 
+    if view_only:
+        user = view_only
     self.add_debug(':: user=%s\n'%user)
     self.add_debug( '$ cat %s\n' % git_config)
     if not os.path.exists(git_config):
