@@ -22,7 +22,7 @@ QUERY_STRING = os.environ['QUERY_STRING']
 user = USER
 
 config = ConfigParser.ConfigParser()
-config.read('config.cfg')
+config.read('/var/www/data/config.cfg')
 
 git_location = config.get('gitwiki','git_location',0)
 http_dir     = config.get('gitwiki','http_dir',0)
@@ -282,7 +282,7 @@ class GitWiki:
 
   @page('log')
   def page_log(self):
-    data = '\n'+self.git([git_location,'log','-p'])
+    data = '\n'+self.git([git_location,'log','-p', '--date=relative'])
     self.handle_logs(data)
 
   @action('log')
