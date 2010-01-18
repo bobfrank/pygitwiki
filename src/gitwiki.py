@@ -134,11 +134,11 @@ class GitWiki:
                 self.page_opt = self.page_opt.split('&')[0]
 
   def add_html(self, data):
-    self.html = '%s%s' % (self.html,data)
+    self.html = '%s%s\r\n' % (self.html,data)
 
   def add_debug(self, data):
     if self.debug:
-        self.debug_html += data
+        self.debug_html += data + "\n"
 
   def save(self, form):
     page = self.page
@@ -231,7 +231,7 @@ class GitWiki:
               if len(tabs[3][k+1:]) == 0 or tabs[3][-1] == '|':
                   data = data + tabs[3][k+1:]+'\n'
               else:
-                  tag = 'thisisanendoflineforline-%s-'%i
+                  tag = ' thisisanendoflineforline-%s-'%i
                   data = data + tabs[3][k+1:]+'%s\n'%tag
                   blamery[tag] = [tabs[0], tabs[1][1:].strip(), tabs[2]]
       blob = textile.textile(data)
