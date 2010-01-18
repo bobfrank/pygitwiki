@@ -41,8 +41,8 @@
   color: #4c4c43;
 }
 
-#content form #rename #rename_bar {
-  position : relative
+#content form#rename #rename_bar {
+  position : relative;
 }
 
 #content form#rename #rename_label {
