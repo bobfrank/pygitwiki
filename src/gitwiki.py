@@ -75,6 +75,13 @@ END_HTML = """
 <br/><br/><i><font size=2><a href="/source.py">[source code]</a></font></i></div></body></html>
 """
 
+REDIRECT_HTML = """
+<html>
+<head>
+<meta HTTP-EQUIV="REFRESH" content="0; url=%(url)s">
+</head>
+</html>
+"""
 
 TOOLTIP_INCLUDE = '<script type="text/javascript" src="/wz_tooltip.js"></script>'
 START_DEBUG = '<div id="debug">[debug mode on]<table><tr><td><pre>'
@@ -142,6 +149,12 @@ class GitWiki:
     if self.debug:
         self.debug_html += data + "\n"
 
+  def redirect(self, url):
+    # pass
+    print CONTENT_TYPE
+    print REDIRECT_HTML % { "url" : url }
+    sys.exit(0)
+
   def save(self, form):
     page = self.page
     if page.find('..') >= 0 or page.find('/') >= 0:
@@ -180,6 +193,7 @@ class GitWiki:
         self.git([git_location, 'commit','-a','-m',
                   'renaming %s to %s via website' % (page,new_name)])
         self.git([git_location, 'push', git_push_dir])
+    self.redirect("/%s%s" % (new_name, debp))
 
   def git(self, run, debug=False):
       self.add_debug( '$ %s' % ' '.join(run))
@@ -214,6 +228,7 @@ class GitWiki:
           self.add_html(HIDE_EDIT_TEXTAREA)
       elif form.has_key("save"):
           self.save(form)
+          self.redirect("/%s%s" % (page, debp))
           # And redirect, after
       else:
           self.add_html(RENAME_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
