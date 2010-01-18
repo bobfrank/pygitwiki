@@ -1,6 +1,22 @@
 h1. PyGitWiki
 
+* A simple wiki, which uses git as a revision repository
+* based on <a href="http://pypi.python.org/pypi/textile">textile</a> and <a href="http://www.walterzorn.com/tooltip/tooltip_e.htm">wz_tooltip.js</a>
+* Currently the source is located at <a href="http://git.bobfrank.org/index.php?p=pygitwiki.git">git.bobfrank.org</a>
+* useful for organizing thoughts and seeing who's thoughts were organized
 
-PyGitWiki is a simple wiki based on the textile python module, and uses git to control history revisions<br/>
-Currently the source is located at <a href="http://git.bobfrank.org/index.php?p=pygitwiki.git">git.bobfrank.org</a>
+h2. Features
+
+* very simple
+* git based in python for minimal code
+* git blame being used for viewing with tooltip for details of who made the most recent change to a line
+* git log is viewable at <a href="log">log</a> (along with diffs)
+* renaming a wiki page goes into each page containing a link to the renamed page, and corrects it for you.
+* a preview button so you can see the textile output without saving
+
+h2. To-do items for this project
+
+* notifications of changes (if you subscribe to a page, or to new pages)
+* fancier preview tab
+* a hierarchy of wikis, so one wiki can belong to another
 
