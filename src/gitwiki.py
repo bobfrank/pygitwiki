@@ -276,11 +276,12 @@ class GitWiki:
 
   @action('blame')
   def action_blame(self):
-      if not os.path.exists(self.page):
-          self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
-          return
+      if not view_only:
+          if not os.path.exists(self.page):
+              self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
+              return
       data = self.git([git_location,'blame','-c',self.page], self.debug)
-      lines = data.split('\r\n')
+      lines = data.split('\n')
       data = ''
       blamery = {}
       for i,line in enumerate(lines):
@@ -311,6 +312,8 @@ class GitWiki:
                     else:
                         txt = '%s seconds ago' % int(diff)
                   except:
+                    self.add_debug('exception')
+                    import traceback
                     pass
                   blamery[tag] = [tabs[0], txt, tabs[1][1:].strip()]
       blob = textile.textile(data)
