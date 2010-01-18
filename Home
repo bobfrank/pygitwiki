@@ -10,7 +10,7 @@ h2. Features
 * very simple
 * git based in python for minimal code
 * git blame being used for viewing with tooltip for details of who made the most recent change to a line
-* git log is viewable at <a href="log">log</a> (along with diffs)
+* git log is viewable at <a href="/Home:log">log</a> (along with diffs)
 * renaming a wiki page goes into each page containing a link to the renamed page, and corrects it for you.
 * a preview button so you can see the textile output without saving
 
