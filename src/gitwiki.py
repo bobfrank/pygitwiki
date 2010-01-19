@@ -374,7 +374,7 @@ class GitWiki:
                 line = '<strike><span class="del">' + line[1:] + '</span></strike>'
         lout += line+'\n'
     data = lout
-    data = '\n'+re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
+    data = re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
     data = data.replace('\ncommit ','\n<hr/>commit ')
     linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
     self.add_html("<div id='diff'>%s</div>" % linkified_data)
