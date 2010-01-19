@@ -18,7 +18,7 @@ form = cgi.FieldStorage()
 
 # Configuration - these should be made into constants, later
 config = ConfigParser.ConfigParser()
-config.read('config.cfg')
+config.read('/var/www/data/config.cfg')
 
 try:
     view_only = config.get('gitwiki','view_only',0)
@@ -49,6 +49,8 @@ START_HTML = """
 </head>
 <body>
 <div id="header"> </div>
+"""
+START_CONTENT = """
 <div id="content">
 """
 RENAME_HTML = """
@@ -367,35 +369,47 @@ class GitWiki:
             inpage = False
         elif len(line) > 1 and inpage:
             if line[0] == '+' and line[:4] != '+++ ':
-                line = '<span style="background-color: a9d0f5;">' + line[1:] + '</span>'
+                line = '<span class="add">' + line[1:] + '</span>'
             elif line[0] == '-' and line[:4] != '--- ':
-                line = '<strike><span style="background-color: f78181;">' + line[1:] + '</span></strike>'
+                line = '<strike><span class="del">' + line[1:] + '</span></strike>'
         lout += line+'\n'
     data = lout
     data = '\n'+re.sub(r'diff --git a/([A-Z]\w*) ', r'diff --git a/<a href="/\1%s">\1</a> ' % (self.debp), data)
     data = data.replace('\ncommit ','\n<hr/>commit ')
     linkified_data = links(data.replace('\n', '<br/>'), self.debp, linksopt)
-    self.add_html(linkified_data)
+    self.add_html("<div id='diff'>%s</div>" % linkified_data)
 
   def add_links(self):
     page = self.page
     page_opt = self.page_opt
     debp = self.debp
 
-    add_home = ""
-    if page != 'Home':
-        add_home = '[Home]'
-
-    log_link = '<a href="/%s:log%s">history</a>' % (page,debp)
-    if page_opt == 'log':
-        log_link = '<a href="/%s%s">current</a>' % (page,debp)
+    log_link = '<a href="/%s:log%s">log</a>' % (page,debp)
+    current_link = '<a href="/%s">page</a>' % (page)
     edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
+
+    if page_opt == 'log':
+        log_link = '<div class="current_action">log</div>'
+    elif page_opt == 'edit':
+        edit_link = '<div class="current_action">edit</div>'
+    else:
+        current_link = '<div class="current_action">page</div>'
+
     if view_only:
         edit_link = ''
 
     s ="""
-       <div id="nav_bar"> %s [%s]  %s  %s </div>\n
-       """ % (add_home, page,log_link,edit_link)
+       <div id="nav_bar" class="clearfix"> 
+         <div class="page">%s</div>
+         <div class="separator"></div>
+         <div id="action_bar">
+           <div class="action">%s </div>
+           <div class="action"> %s </div> 
+           <div class="action" id="edit"> %s </div> 
+        </div>
+       </div>
+       </div>\n
+       """ % (page,current_link, log_link,edit_link)
     linksopt = self.page_opt
     if self.page_opt == 'edit' \
               or self.page_opt == 'blame' \
@@ -410,6 +424,9 @@ class GitWiki:
 
     self.add_html(CONTENT_TYPE)
     self.add_html(START_HTML)
+    self.add_links()
+    self.add_html(START_CONTENT)
+
     self.add_html(TOOLTIP_INCLUDE)
 
     self.add_debug(':: user=%s\n'%user)
@@ -436,8 +453,6 @@ email = %s@theinternetneverlies.com""" % (user,user) )
     # Actions : no printing HTML gets done here
     if self.page_opt == 'rename':
         self.rename(form)
-
-    self.add_links()
 
     # Controller - basically, choose what to do and then execute and print html
     if PAGES.has_key(self.page):

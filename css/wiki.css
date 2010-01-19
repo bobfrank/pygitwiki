@@ -1,8 +1,51 @@
+div#nav_bar {
+  width: 70%;
+  margin: auto;
+  background-color: #78473a;
+}
+
+div#nav_bar #action_bar {
+  background-color: #523127;
+  padding: 10px 15px 0px;
+  border-bottom: 20px solid #ffa33b;
+
+}
+div#nav_bar .action {
+  font-size : 16px;
+  display : inline-block;
+  display: inline-block;
+  text-align: center; 
+  background-color: #fff;
+  margin-right: 2px;
+  font-weight: bold;
+}
+
+div#nav_bar .current_action {
+  text-align: center;
+  padding: 5px 15px 2px;
+  background-color: #ffa33b;
+}
+
+div#nav_bar .page {
+  font-size: 24px;
+  display: inline-block;
+  width: 100%;
+  padding: 5px 20px;
+}
+div#nav_bar .separator {
+  width: auto;
+}
+div#nav_bar .action a {
+  color : #333;
+  text-decoration : none;
+  border-bottom : none;
+  display: inline-block;
+  padding: 5px 15px 2px;
+}
 #content {
-  width : 650;
   padding : 25px;
   margin : auto;
-  border : 1px solid #dedede
+  width: 65%;
 }
 
 #content a:visited, #content a {
@@ -13,42 +56,19 @@
   font-family : sans-serif
 }
 
-#content a:hover {
-  color : #000;
-  border-bottom : none
-}
-
-#content div#nav_bar {
-  margin-bottom : 15px
-}
-
-#content div#nav_bar a {
-  border-left : 2px dashed #A3BFBD;
-  color : #6d6d6d;
-  font-size : 16px;
-  padding : 5px;
-  text-decoration : none;
+a:hover {
+  color : #ff0d51 !important;
   border-bottom : none;
-  display : inline-block
-}
-
-#content form input[type=submit] {
-  background: none;
-  border: none;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-  color: #4c4c43;
 }
 
 #content form#rename #rename_bar {
-  position : relative;
+  position : relative
 }
 
 #content form#rename #rename_label {
   position : absolute;
-  left : 5px;
-  top : 5px;
+  left : 8px;
+  top : 6px;
   height : 35px;
   font-size : 14px
 }
@@ -69,14 +89,36 @@
   height : 25px
 }
 
+#content form input[type=submit] {
+  font-weight: bold;
+  font-size: 16px;
+}
+
 #content form#edit textarea#data {
-  height : 400px;
-  width : 650px;
+  height : 300px;
+  width : 100%;
   overflow : auto;
   padding : 5px;
   border : 3px solid #cdcdcd;
   margin-bottom : 20px
 }
+
+#content pre {
+  white-space: pre-wrap;
+}
+
+#content #diff {
+  font-family: monospace;
+}
+
+#content #diff .add {
+  color: #73d216;
+}
+
+#content #diff .del {
+  color: #ef2929;
+}
+
 
 #debug {
   height : 200px;
@@ -85,4 +127,8 @@
   position : absolute;
   width : 100%;
   border : 1px solid #cdcdcd
+}
+
+body {
+  font-family: helvetica;
 }
