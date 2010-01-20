@@ -384,9 +384,9 @@ class GitWiki:
     page_opt = self.page_opt
     debp = self.debp
 
-    log_link = '<a href="/%s:log%s">log</a>' % (page,debp)
-    current_link = '<a href="/%s">page</a>' % (page)
-    edit_link = '<a href="/%s:edit%s">edit</a>' % (page,debp)
+    log_link = '<a href="/%s:log%s">log<span>see page history</span></a>' % (page,debp)
+    current_link = '<a href="/%s">page<span>see current version of page</span></a>' % (page)
+    edit_link = '<a href="/%s:edit%s">edit<span>make changes to page</span></a>' % (page,debp)
 
     if page_opt == 'log':
         log_link = '<div class="current_action">log</div>'
@@ -400,7 +400,10 @@ class GitWiki:
 
     s ="""
        <div id="nav_bar" class="clearfix"> 
-         <div class="page">%s</div>
+         <div class='wiki'> 
+           <a href="/Home">db<span>go home</span></a>
+           <div class="page">%s</div>
+         </div>
          <div class="separator"></div>
          <div id="action_bar">
            <div class="action">%s </div>

@@ -3,6 +3,18 @@ div#nav_bar {
   margin: auto;
 }
 
+div#nav_bar a span {
+  display: none;
+}
+div#nav_bar a:hover span {
+   display: block;
+   font-size: 16px;
+   position: absolute; top: 72px; left: 0;
+   width: 15%;
+   text-align: left;
+   padding: 5px; margin: 10px; z-index: 100;
+}
+
 div#nav_bar #action_bar {
   padding: 10px 15px 0px;
   border-bottom: 20px solid #000;
@@ -25,13 +37,28 @@ div#nav_bar .current_action {
   color: #fff;
 }
 
+div#nav_bar .wiki {
+  font-weight: bold;
+  display: inline-block;
+  font-size: 22px;
+  float: left;
+}
+
+div#nav_bar .wiki a {
+  text-decoration : none;
+  border-bottom : none;
+  display: inline-block;
+  padding: 5px 15px 2px;
+  background-color: black;
+  color: #fff;
+  font-size: 16px;
+}
 div#nav_bar .page {
   font-size: 26px;
   display: inline-block;
   padding: 5px 0px;
   margin-left: 0px;
   color: #000;
-  float: left;
 }
 div#nav_bar .separator {
   width: auto;
