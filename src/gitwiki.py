@@ -18,7 +18,7 @@ form = cgi.FieldStorage()
 
 # Configuration - these should be made into constants, later
 config = ConfigParser.ConfigParser()
-config.read('/var/www/data/config.cfg')
+config.read('config.cfg')
 
 try:
     view_only = config.get('gitwiki','view_only',0)
@@ -54,8 +54,8 @@ START_CONTENT = """
 <div id="content">
 """
 RENAME_HTML = """
-<form action="/%(page)s:rename%(debp)s" method="post" id="rename">
-  <input type="hidden" name="r" value="%(page)s:rename%(debp)s"/>
+<form action="./%(page)s:rename%(debp)s" method="post" id="rename">
+  <input type="hidden" name="r" value="./%(page)s:rename%(debp)s"/>
 
   <div id="rename_bar">
     <label for="name_field" id="rename_label">Editing Page:</label>
@@ -65,7 +65,7 @@ RENAME_HTML = """
 </form>
 """
 EDIT_HTML = """
-<form action="/%(page)s:edit%(debp)s" method="post" id="edit">
+<form action="./%(page)s:edit%(debp)s" method="post" id="edit">
 <input type="hidden" name="r" value="%(page)s:edit%(debp)s"/>
 <textarea name="data" id="data" wrap="virtual">%(data)s</textarea><br/>
 <input type="submit" value="%(action)s" name="%(action)s">
@@ -85,12 +85,12 @@ END_CONTENT = """
 """
 END_HTML = """
 <div id='footer'>
-<br/><br/><i><font size=2><a href="/source.py">[source code]</a></font></i></div></body></html>
+<br/><br/><i><font size=2><a href="./source.py">[source code]</a></font></i></div></body></html>
 """
 
 REDIRECT_HTML = """Location: %(url)s\n\n """
 
-TOOLTIP_INCLUDE = '<script type="text/javascript" src="/scripts/wz_tooltip.js"></script>'
+TOOLTIP_INCLUDE = '<script type="text/javascript" src="scripts/wz_tooltip.js"></script>'
 START_DEBUG = '<div id="debug">[debug mode on]<table><tr><td><pre>'
 END_DEBUG = '</pre></td></tr></table></div>'
 
@@ -103,8 +103,8 @@ def links(data,debp,mode=None):
        mode = ':'+mode
     #           $text = preg_replace('@([^:])(https?://([-\w\.]+)+(:\d+)?(/([%-\w/_\.]*(\?\S+)?)?)?)@', '$1<a href="$2">$2</a>', $text);
     #data = re.sub(r'([^:])(https?://([-\w\.]+)+(:\d+)?(/([%-\w/_\.]*(\?\S+)?)?)?)', r'\1<a href="\2">\2</a>', data)
-    data = re.sub(r'\[([A-Z]\w+)\]', r'<a href="/\1%s%s">\1</a>' % (mode,debp), data)
-    data = re.sub(r'\[([A-Z]\w+)\|([\w\s]+)\]', r'<a href="/\1%s%s">\2</a>' % (mode,debp), data)
+    data = re.sub(r'\[([A-Z]\w+)\]', r'<a href="./\1%s%s">\1</a>' % (mode,debp), data)
+    data = re.sub(r'\[([A-Z]\w+)\|([\w\s]+)\]', r'<a href="./\1%s%s">\2</a>' % (mode,debp), data)
     return data
 
 ACTIONS = {}
@@ -216,7 +216,7 @@ class GitWiki:
             run.append(self.author)
         self.git(run)
         self.git([git_location, 'push', git_push_dir])
-    self.redirect("/%s%s" % (new_name, debp))
+    self.redirect("./%s%s" % (new_name, debp))
 
   def git(self, run, debug=False):
       p = subprocess.Popen(run, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=myenv)
@@ -270,7 +270,7 @@ class GitWiki:
           self.add_html(HIDE_EDIT_TEXTAREA)
       elif form.has_key("save"):
           self.save(form)
-          self.redirect("/%s%s" % (page, debp))
+          self.redirect("./%s%s" % (page, debp))
           # And redirect, after
       else:
           self.add_html(RENAME_HTML % { "page" : page, "debp" : debp, "data" : data, "action" : "edit" })
@@ -279,7 +279,7 @@ class GitWiki:
   @action('blame')
   def action_blame(self):
       if not os.path.exists(self.page):
-          self.add_html('File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp))
+          self.add_html('File doesn\'t exist, create one <a href="./%s:edit%s">here</a>' % (self.page,self.debp))
           return
       data = self.git([git_location,'blame','-c',self.page], self.debug)
       lines = data.replace('\r','').split('\n')
@@ -336,7 +336,7 @@ class GitWiki:
           data = fp.read()
           fp.close()
       except:
-          data = 'File doesn\'t exist, create one <a href="/%s:edit%s">here</a>' % (self.page,self.debp)
+          data = 'File doesn\'t exist, create one <a href="./%s:edit%s">here</a>' % (self.page,self.debp)
       linkified_data = links(data,self.debp,'view')
       wikified_data = textile.textile(linkified_data)
       self.add_html(wikified_data)
@@ -384,9 +384,9 @@ class GitWiki:
     page_opt = self.page_opt
     debp = self.debp
 
-    log_link = '<a href="/%s:log%s">log<span>see page history</span></a>' % (page,debp)
-    current_link = '<a href="/%s">page<span>see current version of page</span></a>' % (page)
-    edit_link = '<a href="/%s:edit%s">edit<span>make changes to page</span></a>' % (page,debp)
+    log_link = '<a href="./%s:log%s">log<span>see page history</span></a>' % (page,debp)
+    current_link = '<a href="./%s">page<span>see current version of page</span></a>' % (page)
+    edit_link = '<a href="./%s:edit%s">edit<span>make changes to page</span></a>' % (page,debp)
 
     if page_opt == 'log':
         log_link = '<div class="current_action">log</div>'
@@ -401,7 +401,7 @@ class GitWiki:
     s ="""
        <div id="nav_bar" class="clearfix"> 
          <div class='wiki'> 
-           <a href="/Home">db<span>go home</span></a>
+           <a href="./Home">db<span>go home</span></a>
            <div class="page">%s</div>
          </div>
          <div class="separator"></div>
